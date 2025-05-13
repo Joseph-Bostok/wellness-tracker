@@ -38,6 +38,22 @@ export default function HealthQuestDashboard() {
   const [currentTab, setCurrentTab] = useState('dashboard');
   const [isLogActivityModalOpen, setIsLogActivityModalOpen] = useState(false);
   const [goalProgress, setGoalProgress] = useState({ mindfulness: 2, target: 3 });
+  const [activities, setActivities] = useState(recentActivities);
+  const [showAllResources, setShowAllResources] = useState(false);
+  const [showAppointmentDetails, setShowAppointmentDetails] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(null);
+  const [selectedGoal, setSelectedGoal] = useState(null);
+  const [weeklyGoals, setWeeklyGoals] = useState({
+  activity: 150,        // minutes
+  sleep: 56,            // hours
+  nutrition: 8,         // average score out of 10
+  mindfulness: 5        // sessions
+});
+  const [visibleLines, setVisibleLines] = useState({
+  mood: true,
+  sleep: true,
+  activity: true,
+});
   const [newActivity, setNewActivity] = useState({ 
     type: 'Activity', 
     description: '', 
@@ -45,16 +61,6 @@ export default function HealthQuestDashboard() {
     points: 0,
     entryType: null
   });
-  const [activities, setActivities] = useState(recentActivities);
-  const [showAllResources, setShowAllResources] = useState(false);
-  const [showAppointmentDetails, setShowAppointmentDetails] = useState(false);
-  const [activeIndex, setActiveIndex] = useState(null);
-  const [selectedGoal, setSelectedGoal] = useState(null);
-  const [visibleLines, setVisibleLines] = useState({
-  mood: true,
-  sleep: true,
-  activity: true,
-});
 
 
   // Additional resources that will be shown when "View All Resources" is clicked
@@ -179,65 +185,165 @@ export default function HealthQuestDashboard() {
           </div>
         );
       case 'goals':
-        return (
-          <div className="p-6">
-            <h2 className="text-2xl font-bold mb-4">Your Health Goals</h2>
-            <p>Set and track your health and wellness goals here.</p>
-          </div>
-        );
-      case 'reports':
-        return (
-          <div className="p-6">
-            <h2 className="text-2xl font-bold mb-4">Your Wellness Reports</h2>
-            <p>View detailed reports and analytics of your wellness journey.</p>
-          </div>
-        );
-      case 'appointments':
-        return (
-          <div className="p-6">
-            <h2 className="text-2xl font-bold mb-4">Your Appointments</h2>
-            <div className="bg-white rounded-lg shadow p-6 max-w-md">
-              <h3 className="text-gray-700 font-medium mb-4">Upcoming Appointments</h3>
-              <div className="border-b pb-4 mb-4">
-                <div className="flex items-start">
-                  <Calendar className="text-indigo-500 mr-3 mt-1 flex-shrink-0" size={20} />
-                  <div>
-                    <p className="font-medium text-gray-800">CBT Session with Dr. Emily Johnson</p>
-                    <p className="text-sm text-gray-500 mt-1">May 15, 10:00 AM</p>
-                    <button 
-                      onClick={() => setShowAppointmentDetails(!showAppointmentDetails)}
-                      className="mt-2 text-indigo-600 hover:text-indigo-800 text-sm font-medium"
-                    >
-                      {showAppointmentDetails ? 'Hide Details' : 'View Details'}
-                    </button>
-                    
-                    {showAppointmentDetails && (
-                      <div className="mt-3 p-3 bg-gray-50 rounded-md">
-                        <p className="text-sm text-gray-700"><strong>Location:</strong> Virtual (Zoom)</p>
-                        <p className="text-sm text-gray-700"><strong>Duration:</strong> 50 minutes</p>
-                        <p className="text-sm text-gray-700"><strong>Notes:</strong> Please prepare your weekly mood log for review.</p>
-                        <div className="mt-2 flex space-x-2">
-                          <button className="py-1 px-3 bg-indigo-100 text-indigo-700 text-xs rounded-md hover:bg-indigo-200">
-                            Reschedule
-                          </button>
-                          <button className="py-1 px-3 bg-red-100 text-red-700 text-xs rounded-md hover:bg-red-200">
-                            Cancel
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
+  return (
+    <div className="p-6 space-y-8">
+      <div>
+        <h2 className="text-2xl font-bold mb-2">🎯 Weekly Health Goals</h2>
+        <p className="text-gray-600 mb-4">Set your personal targets and keep yourself accountable.</p>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[
+            { key: 'activity', label: 'Activity (min)', icon: '🏃‍♂️' },
+            { key: 'sleep', label: 'Sleep (hrs)', icon: '😴' },
+            { key: 'nutrition', label: 'Nutrition (1–10)', icon: '🥗' },
+            { key: 'mindfulness', label: 'Mindfulness (sessions)', icon: '🧘' },
+          ].map(({ key, label, icon }) => (
+            <div key={key} className="bg-white shadow rounded-lg p-4 flex flex-col justify-between">
+              <div className="flex items-center mb-3">
+                <span className="text-2xl mr-2">{icon}</span>
+                <h3 className="text-md font-semibold text-gray-700">{label}</h3>
               </div>
-              
-              <div className="flex justify-end">
-                <button className="py-2 px-4 bg-indigo-600 text-white text-sm rounded-md hover:bg-indigo-700">
-                  Schedule New Appointment
-                </button>
+              <input
+                type="number"
+                min="0"
+                value={weeklyGoals[key]}
+                onChange={(e) => setWeeklyGoals({ ...weeklyGoals, [key]: Number(e.target.value) })}
+                className="w-full mt-2 border rounded-md p-2 text-center text-lg font-medium text-indigo-700 border-indigo-200 focus:ring-indigo-400 focus:outline-none"
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <h3 className="text-xl font-bold text-gray-800 mb-4">🏅 Achievements</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[
+            { title: 'Active Week', description: 'Logged 150+ minutes of activity', icon: '💪' },
+            { title: 'Sleep Champ', description: 'Averaged 8+ hours per night', icon: '🌙' },
+            { title: 'Mindful Master', description: 'Completed 5 mindfulness sessions', icon: '🧘‍♀️' },
+            { title: 'Nutrition Ninja', description: 'Scored 8+ on nutrition this week', icon: '🍎' },
+            { title: 'Consistency Star', description: 'Logged wellness for 7 days straight', icon: '⭐' },
+          ].map((badge, index) => (
+            <div key={index} className="flex items-start bg-white shadow rounded-lg p-4 hover:bg-indigo-50 transition">
+              <div className="text-3xl mr-4">{badge.icon}</div>
+              <div>
+                <h4 className="font-semibold text-gray-800">{badge.title}</h4>
+                <p className="text-sm text-gray-600">{badge.description}</p>
               </div>
             </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
+      case 'reports':
+  return (
+    <div className="p-6 space-y-8">
+      <h2 className="text-2xl font-bold">📊 Your Wellness Reports</h2>
+      <p className="text-gray-600">Review your progress and trends over time.</p>
+
+      {/* 1. Summary Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        {[
+          { label: 'Mood Avg', value: '7.2/10', icon: '😊' },
+          { label: 'Sleep Avg', value: '7.8 hrs', icon: '😴' },
+          { label: 'Activity', value: '245 mins', icon: '🏃' },
+          { label: 'Nutrition Avg', value: '8.1/10', icon: '🥗' },
+          { label: 'Mindfulness', value: '4 sessions', icon: '🧘' },
+        ].map((item, index) => (
+          <div key={index} className="bg-white shadow rounded-lg p-4 flex flex-col items-center">
+            <div className="text-3xl mb-2">{item.icon}</div>
+            <p className="text-sm text-gray-500">{item.label}</p>
+            <p className="text-lg font-semibold text-gray-800">{item.value}</p>
           </div>
-        );
+        ))}
+      </div>
+
+      {/* 2. Weekly Trend Graph */}
+      <div className="bg-white shadow rounded-lg p-6">
+        <h3 className="text-lg font-semibold mb-4 text-gray-800">📈 Weekly Wellness Trends</h3>
+        <div className="h-64">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={dashboardData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="date" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Line type="monotone" dataKey="mood" stroke="#8884d8" strokeWidth={2} />
+              <Line type="monotone" dataKey="sleep" stroke="#82ca9d" strokeWidth={2} />
+              <Line type="monotone" dataKey="activity" stroke="#ffc658" strokeWidth={2} />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* 3. Goal Completion Breakdown */}
+      <div className="bg-white shadow rounded-lg p-6">
+        <h3 className="text-lg font-semibold mb-4 text-gray-800">🥅 Goal Completion Breakdown</h3>
+        <div className="flex items-center justify-center">
+          <PieChart width={250} height={250}>
+            <Pie
+              data={goalData}
+              dataKey="completed"
+              cx="50%"
+              cy="50%"
+              outerRadius={80}
+              fill="#8884d8"
+              label
+            >
+              {goalData.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+              ))}
+            </Pie>
+            <Tooltip />
+          </PieChart>
+        </div>
+        <div className="grid grid-cols-2 mt-4 gap-2">
+          {goalData.map((goal, index) => (
+            <div key={index} className="flex items-center text-sm text-gray-700">
+              <div
+                className="w-3 h-3 rounded-full mr-2"
+                style={{ backgroundColor: COLORS[index % COLORS.length] }}
+              ></div>
+              {goal.name}: {goal.completed}%
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 4. Logging Consistency */}
+      <div className="bg-white shadow rounded-lg p-6">
+        <h3 className="text-lg font-semibold mb-4 text-gray-800">📆 Logging Consistency</h3>
+        <BarChart width={600} height={200} data={dashboardData}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="date" />
+          <YAxis />
+          <Tooltip />
+          <Bar dataKey="sleep" fill="#8884d8" name="Sleep (hrs)" />
+          <Bar dataKey="activity" fill="#82ca9d" name="Activity (min)" />
+        </BarChart>
+      </div>
+
+      {/* 5. Download Button */}
+      <div className="flex justify-end">
+        <button className="py-2 px-4 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
+          📥 Download Monthly Report
+        </button>
+      </div>
+    </div>
+  );
+
+      case 'appointments':
+  return (
+    <div className="p-6">
+      <h2 className="text-2xl font-bold mb-2">📅 Appointments</h2>
+      <p className="text-gray-600 text-lg">This feature is coming soon. Stay tuned!</p>
+    </div>
+  );
+
       case 'resources':
         return (
           <div className="p-6">
