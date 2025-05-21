@@ -9,6 +9,7 @@
     "@testing-library/user-event": "^13.5.0",
     "autoprefixer": "^10.x.x",
     "lucide-react": "^0.510.0",
+    "mongoose": "^8.15.0",
     "postcss": "^8.x.x",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
@@ -20,6 +21,8 @@
   },
   "scripts": {
     "start": "set NODE_OPTIONS=--openssl-legacy-provider && react-scripts start",
+    "backend-start": "cd backend && node index.js",
+    "dev": "concurrently \"npm run backend-start\" \"npm start\"",
     "build": "set NODE_OPTIONS=--openssl-legacy-provider && react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
@@ -41,5 +44,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
   }
 }
