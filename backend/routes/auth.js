@@ -1,19 +1,23 @@
 const express = require('express');
 const router = express.Router();
-const pool = require('../db/pool');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const User = require('../models/User');
 
 // Register route
 router.post('/register', async (req, res) => {
   const { email, password } = req.body;
   try {
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) return res.status(400).json({ msg: 'User already exists' });
+
     const hashed = await bcrypt.hash(password, 10);
-    const result = await pool.query(
-      'INSERT INTO users (email, password_hash) VALUES ($1, $2) RETURNING *',
-      [email, hashed]
-    );
-    const token = jwt.sign({ id: result.rows[0].id }, process.env.JWT_SECRET);
+
+    const newUser = new User({ email, passwordHash: hashed });
+    await newUser.save();
+
+    const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET);
     res.json({ token });
   } catch (err) {
     console.error(err);
@@ -25,13 +29,13 @@ router.post('/register', async (req, res) => {
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
   try {
-    const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
-    if (result.rows.length === 0) return res.status(401).json({ msg: 'Invalid email' });
+    const user = await User.findOne({ email });
+    if (!user) return res.status(401).json({ msg: 'Invalid email' });
 
-    const valid = await bcrypt.compare(password, result.rows[0].password_hash);
+    const valid = await bcrypt.compare(password, user.passwordHash);
     if (!valid) return res.status(401).json({ msg: 'Invalid password' });
 
-    const token = jwt.sign({ id: result.rows[0].id }, process.env.JWT_SECRET);
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
     res.json({ token });
   } catch (err) {
     console.error(err);
@@ -39,4 +43,4 @@ router.post('/login', async (req, res) => {
   }
 });
 
-module.exports = router; //  This line is critical
+module.exports = router;
