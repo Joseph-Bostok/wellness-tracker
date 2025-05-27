@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   BarChart, Bar, PieChart, Pie, Cell
@@ -8,52 +8,31 @@ import {
   TrendingUp, BookOpen, Heart, Moon, Apple, Smile
 } from 'lucide-react';
 
-const dashboardData = [
-  { date: 'Mon', mood: 7, sleep: 6, activity: 45, nutrition: 8 },
-  { date: 'Tue', mood: 6, sleep: 7, activity: 30, nutrition: 7 },
-  { date: 'Wed', mood: 8, sleep: 8, activity: 60, nutrition: 9 },
-  { date: 'Thu', mood: 7, sleep: 7, activity: 50, nutrition: 8 },
-  { date: 'Fri', mood: 9, sleep: 7, activity: 40, nutrition: 8 },
-  { date: 'Sat', mood: 8, sleep: 9, activity: 20, nutrition: 6 },
-  { date: 'Sun', mood: 7, sleep: 8, activity: 35, nutrition: 7 },
-];
-
-const goalData = [
-  { name: 'Activity', completed: 70, remaining: 30 },
-  { name: 'Sleep', completed: 85, remaining: 15 },
-  { name: 'Nutrition', completed: 60, remaining: 40 },
-  { name: 'Mindfulness', completed: 40, remaining: 60 },
-];
-
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
-
-const recentActivities = [
-  { type: 'Activity', description: 'Morning walk - 30 minutes', time: '8:30 AM', points: 15 },
-  { type: 'Nutrition', description: 'Balanced breakfast', time: '9:15 AM', points: 10 },
-  { type: 'Mood', description: 'Feeling positive - logged mood', time: '12:00 PM', points: 5 },
-  { type: 'Sleep', description: 'Logged 7.5 hours of sleep', time: 'Yesterday', points: 10 },
-];
 
 export default function HealthQuestDashboard() {
   const [currentTab, setCurrentTab] = useState('dashboard');
   const [isLogActivityModalOpen, setIsLogActivityModalOpen] = useState(false);
   const [goalProgress, setGoalProgress] = useState({ mindfulness: 2, target: 3 });
-  const [activities, setActivities] = useState(recentActivities);
+  const [activities, setActivities] = useState([]);
+  const [goalData, setGoalData] = useState([]);
+  const [dashboardData, setDashboardData] = useState([]);
   const [showAllResources, setShowAllResources] = useState(false);
   const [showAppointmentDetails, setShowAppointmentDetails] = useState(false);
   const [activeIndex, setActiveIndex] = useState(null);
   const [selectedGoal, setSelectedGoal] = useState(null);
+  const [wellnessScore, setWellnessScore] = useState(null);
   const [weeklyGoals, setWeeklyGoals] = useState({
-  activity: 150,        // minutes
-  sleep: 56,            // hours
-  nutrition: 8,         // average score out of 10
-  mindfulness: 5        // sessions
-});
+    activity: 150,        // minutes
+    sleep: 56,            // hours
+    nutrition: 8,         // average score out of 10
+    mindfulness: 5        // sessions
+  });
   const [visibleLines, setVisibleLines] = useState({
-  mood: true,
-  sleep: true,
-  activity: true,
-});
+    mood: true,
+    sleep: true,
+    activity: true,
+  });
   const [newActivity, setNewActivity] = useState({ 
     type: 'Activity', 
     description: '', 
@@ -62,6 +41,13 @@ export default function HealthQuestDashboard() {
     entryType: null
   });
 
+  
+// const goalData = activities.length === 0 ? [] : [
+//   { name: 'Activity', completed: 70, remaining: 30 },
+//   { name: 'Sleep', completed: 85, remaining: 15 },
+//   { name: 'Nutrition', completed: 60, remaining: 40 },
+//   { name: 'Mindfulness', completed: 40, remaining: 60 },
+// ];
 
   // Additional resources that will be shown when "View All Resources" is clicked
   const additionalResources = [
@@ -69,6 +55,57 @@ export default function HealthQuestDashboard() {
     { title: 'Stress Management Techniques', type: 'Article • Added April 20' },
     { title: 'Healthy Meal Planning Guide', type: 'PDF Guide • Added April 15' }
   ];
+
+  // Fetch user-specific wellness data
+useEffect(() => {
+  const fetchActivities = async () => {
+    const token = localStorage.getItem('token');
+    const res = await fetch('http://localhost:5000/entries', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const data = await res.json();
+    if (res.ok) {
+      const formatted = data.map(entry => ({
+        type: entry.type || 'Activity',
+        description: entry.journal_entry || entry.description || 'Wellness Entry',
+        time: new Date(entry.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        points: 10,
+        mood: entry.mood,
+        sleep_hours: entry.sleep_hours,
+        exercise_minutes: entry.exercise_minutes
+      }));
+
+      setActivities(formatted);
+
+      // Calculate wellness score
+      const total = formatted.length;
+      const moodPts = formatted.filter(e => e.mood).length;
+      const sleepPts = formatted.filter(e => e.sleep_hours && e.sleep_hours >= 7).length;
+      const activityPts = formatted.filter(e => e.exercise_minutes && e.exercise_minutes >= 30).length;
+
+      const score = total > 0 ? Math.min(100, Math.round((moodPts + sleepPts + activityPts) / (total * 3) * 100)) : 0;
+      setWellnessScore(score);
+
+      // Calculate goal data progress
+      const goalBreakdown = [
+        { name: 'Activity', completed: Math.min(100, Math.round((activityPts / total) * 100)), remaining: 0 },
+        { name: 'Sleep', completed: Math.min(100, Math.round((sleepPts / total) * 100)), remaining: 0 },
+        { name: 'Nutrition', completed: 60, remaining: 40 }, // placeholder
+        { name: 'Mindfulness', completed: Math.min(100, Math.round((formatted.filter(e => e.type === 'Mindfulness').length / total) * 100)), remaining: 0 }
+      ];
+      setGoalData(goalBreakdown);
+    } else {
+      console.error(data.msg || 'Failed to load entries');
+    }
+  };
+
+  fetchActivities();
+}, []);
+
+
 
   // Function to handle logging a new activity
   const handleLogActivity = () => {
@@ -992,6 +1029,31 @@ export default function HealthQuestDashboard() {
         </header>
 
         {renderTabContent()}
+        {currentTab === 'dashboard' && activities.length === 0 && (
+      <div className="mx-6 my-8 bg-white rounded-lg shadow p-6 text-center">
+        <h3 className="text-lg font-semibold text-gray-800 mb-2">Let’s Get Started</h3>
+        <p className="text-gray-600 mb-4">Start tracking your wellness journey today by setting goals or logging your first activity.</p>
+      <div className="flex justify-center gap-4">
+      <button
+        onClick={() => setCurrentTab('goals')}
+        className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+      >
+        Set Goals
+      </button>
+      <button
+        onClick={() => {
+          setCurrentTab('tracker');
+          setIsLogActivityModalOpen(true);
+        }}
+        className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+      >
+        Log Activity
+      </button>
+    </div>
+  </div>
+)}
+{renderActivityModal()}
+        
         {renderActivityModal()}
       </div>
     </div>
