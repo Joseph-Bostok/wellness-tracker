@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { supabase } from './supabaseClient';
 
 export default function LoginForm({ onLogin }) {
   const [email, setEmail] = useState('');
@@ -6,50 +7,22 @@ export default function LoginForm({ onLogin }) {
   const [error, setError] = useState('');
 
   const handleLogin = async (e) => {
-    e.preventDefault(); // ✅ Prevent form from reloading
-
-    try {
-      const res = await fetch('http://localhost:5000/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.msg || 'Login failed');
-        return;
-      }
-
-      localStorage.setItem('token', data.token); // ✅ Store token
-      onLogin(); // ✅ Tell App.js to switch to dashboard view
-    } catch (err) {
-      console.error(err);
-      setError('Network or server error');
+    e.preventDefault();
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+      setError(error.message);
+    } else {
+      onLogin();
     }
   };
 
   return (
-    <form onSubmit={handleLogin} className="max-w-md mx-auto mt-12 p-6 bg-white shadow rounded">
-      <h2 className="text-xl font-bold mb-4">Login</h2>
-      {error && <p className="text-red-600 text-sm mb-2">{error}</p>}
-      <input
-        className="w-full p-2 mb-4 border rounded"
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-      />
-      <input
-        type="password"
-        className="w-full p-2 mb-4 border rounded"
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
-      <button className="w-full bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700">
-        Login
-      </button>
+    <form onSubmit={handleLogin} className="space-y-4 bg-white p-6 shadow rounded">
+      <h2 className="text-xl font-bold">Log In</h2>
+      {error && <p className="text-red-600 text-sm">{error}</p>}
+      <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full p-2 border rounded" placeholder="Email" required />
+      <input type="password" value={password} onChange={e => setPassword(e.target.value)} className="w-full p-2 border rounded" placeholder="Password" required />
+      <button type="submit" className="bg-indigo-600 text-white w-full py-2 rounded">Log In</button>
     </form>
   );
 }

@@ -1,16 +1,33 @@
 import React, { useState, useEffect } from 'react';
 import HealthQuestDashboard from './healthQuestDash';
-import LoginForm from './loginform';
-import RegisterForm from './registerform';
+import LoginForm from './LoginForm';
+import RegisterForm from './RegisterForm';
+import { supabase } from './supabaseClient';
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showLogin, setShowLogin] = useState(true);
+  const [user, setUser] = useState(null);
 
-  // Check if token exists on first render
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    setIsLoggedIn(!!token);
+    const checkSession = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      setIsLoggedIn(!!session);
+      setUser(session?.user || null);
+    };
+
+    checkSession();
+
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsLoggedIn(!!session);
+      setUser(session?.user || null);
+    });
+
+    return () => {
+      listener.subscription.unsubscribe();
+    };
   }, []);
 
   if (!isLoggedIn) {
@@ -22,6 +39,7 @@ export default function App() {
           ) : (
             <RegisterForm onRegister={() => setIsLoggedIn(true)} />
           )}
+
           <div className="text-center mt-4">
             {showLogin ? (
               <p>
@@ -40,7 +58,7 @@ export default function App() {
                   onClick={() => setShowLogin(true)}
                   className="text-indigo-600 font-medium hover:underline"
                 >
-                  Login
+                  Log In
                 </button>
               </p>
             )}
@@ -50,6 +68,5 @@ export default function App() {
     );
   }
 
-  // If logged in, show dashboard
-  return <HealthQuestDashboard />;
+  return <HealthQuestDashboard user={user} />;
 }
