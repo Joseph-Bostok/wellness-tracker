@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
 import MoodAnalyticsChart from './MoodAnalyticsChart';
 import StreakTracker from './StreakTracker';
+import SleepTracker from './SleepTracker';
 
 const prompts = [
   "What went well today?",
@@ -42,7 +43,7 @@ export default function HealthQuestDashboard({ user }) {
   const saveEntry = async () => {
     if (!entry.trim() || !user) return;
 
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('journal_entries')
       .insert([{ content: entry, mood, user_id: user.id }]);
 
@@ -142,94 +143,94 @@ export default function HealthQuestDashboard({ user }) {
               {showAnalytics ? 'Hide' : 'Show'} Mood Analytics
             </button>
           </div>
+
+          <div className="mt-10">
+            <h2 className="text-xl font-bold text-gray-800 mb-4">📚 Journal History</h2>
+            <div className="space-y-4">
+              {entries.map((e) => (
+                <div key={e.id} className="bg-gray-50 p-4 rounded shadow-sm relative">
+                  <div className="absolute top-2 right-2">
+                    <button
+                      onClick={() => setMenuOpenId(menuOpenId === e.id ? null : e.id)}
+                      className="text-gray-600 hover:text-gray-800 text-xl"
+                      title="Options"
+                    >
+                      ⋮
+                    </button>
+                    {menuOpenId === e.id && (
+                      <div className="absolute right-0 mt-2 w-28 bg-white border rounded shadow z-10">
+                        <button
+                          onClick={() => deleteEntry(e.id)}
+                          className="w-full text-left px-4 py-2 text-sm hover:bg-red-100 text-red-600"
+                        >
+                          Delete
+                        </button>
+                        <button
+                          onClick={() => startEditing(e)}
+                          className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 text-gray-700"
+                        >
+                          Edit
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {editingId === e.id ? (
+                    <div>
+                      <div className="mb-2">
+                        <textarea
+                          value={editedContent}
+                          onChange={(ev) => setEditedContent(ev.target.value)}
+                          className="w-full p-2 border rounded"
+                          rows={4}
+                        />
+                      </div>
+                      <div className="flex space-x-2 mb-2">
+                        {['😢', '😕', '😐', '🙂', '😊'].map((m) => (
+                          <span
+                            key={m}
+                            role="img"
+                            aria-label={`Mood ${m}`}
+                            onClick={() => setEditedMood(m)}
+                            className={`text-2xl p-2 rounded-full border cursor-pointer ${editedMood === m ? 'border-indigo-500 bg-indigo-100' : 'border-gray-300'}`}
+                          >
+                            {m}
+                          </span>
+                        ))}
+                      </div>
+                      <div className="flex gap-3">
+                        <button onClick={saveEdit} className="bg-green-600 text-white px-4 py-1 rounded hover:bg-green-700">Save</button>
+                        <button onClick={cancelEditing} className="bg-gray-300 px-4 py-1 rounded hover:bg-gray-400">Cancel</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex justify-between items-start mb-2">
+                        <p className="text-sm text-gray-500">
+                          {new Date(e.created_at).toLocaleString()}
+                        </p>
+                        <span role="img" aria-label={`Mood ${e.mood || 'Note'}`} className="text-lg">
+                          {e.mood || '📝'}
+                        </span>
+                      </div>
+                      <p className="text-gray-800 whitespace-pre-wrap">{e.content}</p>
+                    </>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
         {showAnalytics && (
-  <div className="lg:col-span-5 space-y-6">
-    <div className="bg-white p-6 rounded shadow flex items-center justify-center min-h-[300px]">
-      <StreakTracker user={user} />
-    </div>
-    <MoodAnalyticsChart user={user} />
-  </div>
-)}
-
-      </div>
-
-      <div className="w-full max-w-4xl mt-10">
-        <h2 className="text-xl font-bold text-gray-800 mb-4">📚 Journal History</h2>
-        <div className="space-y-4">
-          {entries.map((e) => (
-            <div key={e.id} className="bg-white p-4 rounded shadow relative">
-              <div className="absolute top-2 right-2">
-                <button
-                  onClick={() => setMenuOpenId(menuOpenId === e.id ? null : e.id)}
-                  className="text-gray-600 hover:text-gray-800 text-xl"
-                  title="Options"
-                >
-                  ⋮
-                </button>
-                {menuOpenId === e.id && (
-                  <div className="absolute right-0 mt-2 w-28 bg-white border rounded shadow z-10">
-                    <button
-                      onClick={() => deleteEntry(e.id)}
-                      className="w-full text-left px-4 py-2 text-sm hover:bg-red-100 text-red-600"
-                    >
-                      Delete
-                    </button>
-                    <button
-                      onClick={() => startEditing(e)}
-                      className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 text-gray-700"
-                    >
-                      Edit
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              {editingId === e.id ? (
-                <div>
-                  <div className="mb-2">
-                    <textarea
-                      value={editedContent}
-                      onChange={(ev) => setEditedContent(ev.target.value)}
-                      className="w-full p-2 border rounded"
-                      rows={4}
-                    />
-                  </div>
-                  <div className="flex space-x-2 mb-2">
-                    {['😢', '😕', '😐', '🙂', '😊'].map((m) => (
-                      <span
-                        key={m}
-                        role="img"
-                        aria-label={`Mood ${m}`}
-                        onClick={() => setEditedMood(m)}
-                        className={`text-2xl p-2 rounded-full border cursor-pointer ${editedMood === m ? 'border-indigo-500 bg-indigo-100' : 'border-gray-300'}`}
-                      >
-                        {m}
-                      </span>
-                    ))}
-                  </div>
-                  <div className="flex gap-3">
-                    <button onClick={saveEdit} className="bg-green-600 text-white px-4 py-1 rounded hover:bg-green-700">Save</button>
-                    <button onClick={cancelEditing} className="bg-gray-300 px-4 py-1 rounded hover:bg-gray-400">Cancel</button>
-                  </div>
-                </div>
-              ) : (
-                <>
-                  <div className="flex justify-between items-start mb-2">
-                    <p className="text-sm text-gray-500">
-                      {new Date(e.created_at).toLocaleString()}
-                    </p>
-                    <span role="img" aria-label={`Mood ${e.mood || 'Note'}`} className="text-lg">
-                      {e.mood || '📝'}
-                    </span>
-                  </div>
-                  <p className="text-gray-800 whitespace-pre-wrap">{e.content}</p>
-                </>
-              )}
+          <div className="lg:col-span-5 space-y-6">
+            <div className="bg-white p-6 rounded shadow flex items-center justify-center min-h-[300px]">
+              <StreakTracker user={user} />
             </div>
-          ))}
-        </div>
+            <MoodAnalyticsChart user={user} />
+            <SleepTracker user={user} />
+          </div>
+        )}
       </div>
     </div>
   );
