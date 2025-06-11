@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import HealthQuestDashboard from './healthQuestDash';
-import LoginForm from './LoginForm.jsx';
-import RegisterForm from './RegisterForm.jsx';
+import LoginForm from './loginform.jsx';
+import RegisterForm from './registerform.jsx';
 import { supabase } from './supabaseClient';
 
 export default function App() {
