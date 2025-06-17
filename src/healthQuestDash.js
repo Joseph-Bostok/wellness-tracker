@@ -21,7 +21,7 @@ export default function HealthQuestDashboard({ user }) {
   const [editingId, setEditingId] = useState(null);
   const [editedContent, setEditedContent] = useState('');
   const [editedMood, setEditedMood] = useState('😊');
-  const [showAnalytics, setShowAnalytics] = useState(true);
+  const [activeTab, setActiveTab] = useState('journal');
 
   useEffect(() => {
     setPrompt(prompts[Math.floor(Math.random() * prompts.length)]);
@@ -94,140 +94,144 @@ export default function HealthQuestDashboard({ user }) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center p-6">
-      <div className="w-full max-w-7xl grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <div className="lg:col-span-7 bg-white p-6 rounded shadow space-y-6">
-          <h1 className="text-2xl font-bold">📝 Journal</h1>
-
-          <div>
-            <p className="text-sm text-gray-600 mb-1">Prompt:</p>
-            <div className="italic text-gray-700">“{prompt}”</div>
+    <div className="min-h-screen bg-gray-100">
+      <nav className="bg-indigo-600 text-white px-6 py-4 shadow-md sticky top-0 z-50">
+        <div className="flex justify-between items-center">
+          <h1 className="text-lg font-semibold">Wellness Tracker</h1>
+          <div className="space-x-4">
+            <button onClick={() => setActiveTab('journal')} className={`hover:underline ${activeTab === 'journal' ? 'font-bold underline' : ''}`}>Journal</button>
+            <button onClick={() => setActiveTab('analytics')} className={`hover:underline ${activeTab === 'analytics' ? 'font-bold underline' : ''}`}>Analytics</button>
+            <button onClick={() => setActiveTab('sleep')} className={`hover:underline ${activeTab === 'sleep' ? 'font-bold underline' : ''}`}>Sleep</button>
           </div>
+        </div>
+      </nav>
 
-          <div>
-            <p className="text-sm text-gray-600 mb-1">Mood:</p>
-            <div className="flex space-x-2">
-              {['😢', '😕', '😐', '🙂', '😊'].map((m) => (
-                <span
-                  key={m}
-                  role="img"
-                  aria-label={`Mood ${m}`}
-                  onClick={() => setMood(m)}
-                  className={`text-2xl p-2 rounded-full border cursor-pointer ${mood === m ? 'border-indigo-500 bg-indigo-100' : 'border-gray-300'}`}
-                >
-                  {m}
-                </span>
-              ))}
+      <div className="flex flex-col items-center p-6 space-y-10">
+        {activeTab === 'journal' && (
+          <div className="w-full max-w-7xl bg-white p-6 rounded shadow space-y-6">
+            <h2 className="text-2xl font-bold">📝 Journal</h2>
+            <div>
+              <p className="text-sm text-gray-600 mb-1">Prompt:</p>
+              <div className="italic text-gray-700">“{prompt}”</div>
             </div>
-          </div>
-
-          <textarea
-            className="w-full p-4 border rounded"
-            rows="6"
-            value={entry}
-            onChange={(e) => setEntry(e.target.value)}
-            placeholder="Write your thoughts here..."
-          ></textarea>
-
-          <div className="flex justify-between items-center">
+            <div>
+              <p className="text-sm text-gray-600 mb-1">Mood:</p>
+              <div className="flex space-x-2">
+                {['😢', '😕', '😐', '🙂', '😊'].map((m) => (
+                  <span
+                    key={m}
+                    role="img"
+                    aria-label={`Mood ${m}`}
+                    onClick={() => setMood(m)}
+                    className={`text-2xl p-2 rounded-full border cursor-pointer ${mood === m ? 'border-indigo-500 bg-indigo-100' : 'border-gray-300'}`}
+                  >
+                    {m}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <textarea
+              className="w-full p-4 border rounded"
+              rows="6"
+              value={entry}
+              onChange={(e) => setEntry(e.target.value)}
+              placeholder="Write your thoughts here..."
+            ></textarea>
             <button
               onClick={saveEntry}
               className="bg-indigo-600 text-white px-6 py-2 rounded-full hover:bg-indigo-700 transition"
             >
               Save Entry
             </button>
-            <button
-              onClick={() => setShowAnalytics(!showAnalytics)}
-              className="bg-white border border-indigo-600 text-indigo-600 px-4 py-2 rounded-full text-sm hover:bg-indigo-50"
-            >
-              {showAnalytics ? 'Hide' : 'Show'} Mood Analytics
-            </button>
-          </div>
-
-          <div className="mt-10">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">📚 Journal History</h2>
-            <div className="space-y-4">
-              {entries.map((e) => (
-                <div key={e.id} className="bg-gray-50 p-4 rounded shadow-sm relative">
-                  <div className="absolute top-2 right-2">
-                    <button
-                      onClick={() => setMenuOpenId(menuOpenId === e.id ? null : e.id)}
-                      className="text-gray-600 hover:text-gray-800 text-xl"
-                      title="Options"
-                    >
-                      ⋮
-                    </button>
-                    {menuOpenId === e.id && (
-                      <div className="absolute right-0 mt-2 w-28 bg-white border rounded shadow z-10">
-                        <button
-                          onClick={() => deleteEntry(e.id)}
-                          className="w-full text-left px-4 py-2 text-sm hover:bg-red-100 text-red-600"
-                        >
-                          Delete
-                        </button>
-                        <button
-                          onClick={() => startEditing(e)}
-                          className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 text-gray-700"
-                        >
-                          Edit
-                        </button>
+            <div className="mt-10">
+              <h3 className="text-xl font-bold text-gray-800 mb-4">📚 Journal History</h3>
+              <div className="space-y-4">
+                {entries.map((e) => (
+                  <div key={e.id} className="bg-gray-50 p-4 rounded shadow-sm relative">
+                    <div className="absolute top-2 right-2">
+                      <button
+                        onClick={() => setMenuOpenId(menuOpenId === e.id ? null : e.id)}
+                        className="text-gray-600 hover:text-gray-800 text-xl"
+                        title="Options"
+                      >
+                        ⋮
+                      </button>
+                      {menuOpenId === e.id && (
+                        <div className="absolute right-0 mt-2 w-28 bg-white border rounded shadow z-10">
+                          <button
+                            onClick={() => deleteEntry(e.id)}
+                            className="w-full text-left px-4 py-2 text-sm hover:bg-red-100 text-red-600"
+                          >
+                            Delete
+                          </button>
+                          <button
+                            onClick={() => startEditing(e)}
+                            className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 text-gray-700"
+                          >
+                            Edit
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                    {editingId === e.id ? (
+                      <div>
+                        <div className="mb-2">
+                          <textarea
+                            value={editedContent}
+                            onChange={(ev) => setEditedContent(ev.target.value)}
+                            className="w-full p-2 border rounded"
+                            rows={4}
+                          />
+                        </div>
+                        <div className="flex space-x-2 mb-2">
+                          {['😢', '😕', '😐', '🙂', '😊'].map((m) => (
+                            <span
+                              key={m}
+                              role="img"
+                              aria-label={`Mood ${m}`}
+                              onClick={() => setEditedMood(m)}
+                              className={`text-2xl p-2 rounded-full border cursor-pointer ${editedMood === m ? 'border-indigo-500 bg-indigo-100' : 'border-gray-300'}`}
+                            >
+                              {m}
+                            </span>
+                          ))}
+                        </div>
+                        <div className="flex gap-3">
+                          <button onClick={saveEdit} className="bg-green-600 text-white px-4 py-1 rounded hover:bg-green-700">Save</button>
+                          <button onClick={cancelEditing} className="bg-gray-300 px-4 py-1 rounded hover:bg-gray-400">Cancel</button>
+                        </div>
                       </div>
+                    ) : (
+                      <>
+                        <div className="flex justify-between items-start mb-2">
+                          <p className="text-sm text-gray-500">
+                            {new Date(e.created_at).toLocaleString()}
+                          </p>
+                          <span role="img" aria-label={`Mood ${e.mood || 'Note'}`} className="text-lg">
+                            {e.mood || '📝'}
+                          </span>
+                        </div>
+                        <p className="text-gray-800 whitespace-pre-wrap">{e.content}</p>
+                      </>
                     )}
                   </div>
-
-                  {editingId === e.id ? (
-                    <div>
-                      <div className="mb-2">
-                        <textarea
-                          value={editedContent}
-                          onChange={(ev) => setEditedContent(ev.target.value)}
-                          className="w-full p-2 border rounded"
-                          rows={4}
-                        />
-                      </div>
-                      <div className="flex space-x-2 mb-2">
-                        {['😢', '😕', '😐', '🙂', '😊'].map((m) => (
-                          <span
-                            key={m}
-                            role="img"
-                            aria-label={`Mood ${m}`}
-                            onClick={() => setEditedMood(m)}
-                            className={`text-2xl p-2 rounded-full border cursor-pointer ${editedMood === m ? 'border-indigo-500 bg-indigo-100' : 'border-gray-300'}`}
-                          >
-                            {m}
-                          </span>
-                        ))}
-                      </div>
-                      <div className="flex gap-3">
-                        <button onClick={saveEdit} className="bg-green-600 text-white px-4 py-1 rounded hover:bg-green-700">Save</button>
-                        <button onClick={cancelEditing} className="bg-gray-300 px-4 py-1 rounded hover:bg-gray-400">Cancel</button>
-                      </div>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="flex justify-between items-start mb-2">
-                        <p className="text-sm text-gray-500">
-                          {new Date(e.created_at).toLocaleString()}
-                        </p>
-                        <span role="img" aria-label={`Mood ${e.mood || 'Note'}`} className="text-lg">
-                          {e.mood || '📝'}
-                        </span>
-                      </div>
-                      <p className="text-gray-800 whitespace-pre-wrap">{e.content}</p>
-                    </>
-                  )}
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
-        {showAnalytics && (
-          <div className="lg:col-span-5 space-y-6">
-            <div className="bg-white p-6 rounded shadow flex items-center justify-center min-h-[300px]">
+        {activeTab === 'analytics' && (
+          <div className="w-full max-w-7xl space-y-6">
+            <div className="bg-white p-6 rounded shadow">
               <StreakTracker user={user} />
             </div>
             <MoodAnalyticsChart user={user} />
+          </div>
+        )}
+
+        {activeTab === 'sleep' && (
+          <div className="w-full max-w-5xl">
             <SleepTracker user={user} />
           </div>
         )}
