@@ -4,6 +4,7 @@ import MoodAnalyticsChart from './MoodAnalyticsChart';
 import StreakTracker from './StreakTracker';
 import SleepTracker from './SleepTracker';
 import MealTracker from './MealTracker';
+import ExerciseTracker from './ExerciseTracker';
 
 const prompts = [
   "What went well today?",
@@ -104,7 +105,8 @@ export default function HealthQuestDashboard({ user }) {
               { key: 'journal', label: '📝 Journal' },
               { key: 'analytics', label: '📊 Analytics' },
               { key: 'sleep', label: '😴 Sleep' },
-              { key: 'meals', label: '🍽️ Meals' }
+              { key: 'meals', label: '🍽️ Meals' },
+              { key: 'exercise', label: '🏋️ Exercise' }
             ].map(tab => (
               <button
                 key={tab.key}
@@ -254,6 +256,12 @@ export default function HealthQuestDashboard({ user }) {
         {activeTab === 'meals' && (
           <div className="w-full max-w-5xl">
             <MealTracker user={user} />
+          </div>
+        )}
+
+        {activeTab === 'exercise' && (
+          <div className="w-full max-w-5xl">
+            <ExerciseTracker user={user} />
           </div>
         )}
       </div>
