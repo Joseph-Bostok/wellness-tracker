@@ -3,6 +3,7 @@ import { supabase } from './supabaseClient';
 import MoodAnalyticsChart from './MoodAnalyticsChart';
 import StreakTracker from './StreakTracker';
 import SleepTracker from './SleepTracker';
+import MealTracker from './MealTracker';
 
 const prompts = [
   "What went well today?",
@@ -98,10 +99,23 @@ export default function HealthQuestDashboard({ user }) {
       <nav className="bg-indigo-600 text-white px-6 py-4 shadow-md sticky top-0 z-50">
         <div className="flex justify-between items-center">
           <h1 className="text-lg font-semibold">Wellness Tracker</h1>
-          <div className="space-x-4">
-            <button onClick={() => setActiveTab('journal')} className={`hover:underline ${activeTab === 'journal' ? 'font-bold underline' : ''}`}>Journal</button>
-            <button onClick={() => setActiveTab('analytics')} className={`hover:underline ${activeTab === 'analytics' ? 'font-bold underline' : ''}`}>Analytics</button>
-            <button onClick={() => setActiveTab('sleep')} className={`hover:underline ${activeTab === 'sleep' ? 'font-bold underline' : ''}`}>Sleep</button>
+          <div className="flex space-x-2">
+            {[
+              { key: 'journal', label: '📝 Journal' },
+              { key: 'analytics', label: '📊 Analytics' },
+              { key: 'sleep', label: '😴 Sleep' },
+              { key: 'meals', label: '🍽️ Meals' }
+            ].map(tab => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`px-3 py-1 rounded-full transition ${
+                  activeTab === tab.key ? 'bg-white text-indigo-600 font-semibold' : 'hover:bg-indigo-500'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
         </div>
       </nav>
@@ -120,6 +134,7 @@ export default function HealthQuestDashboard({ user }) {
                 {['😢', '😕', '😐', '🙂', '😊'].map((m) => (
                   <span
                     key={m}
+                    title={`Feeling: ${m}`}
                     role="img"
                     aria-label={`Mood ${m}`}
                     onClick={() => setMood(m)}
@@ -145,7 +160,7 @@ export default function HealthQuestDashboard({ user }) {
             </button>
             <div className="mt-10">
               <h3 className="text-xl font-bold text-gray-800 mb-4">📚 Journal History</h3>
-              <div className="space-y-4">
+              <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2">
                 {entries.map((e) => (
                   <div key={e.id} className="bg-gray-50 p-4 rounded shadow-sm relative">
                     <div className="absolute top-2 right-2">
@@ -174,7 +189,7 @@ export default function HealthQuestDashboard({ user }) {
                       )}
                     </div>
                     {editingId === e.id ? (
-                      <div>
+                      <div className="bg-indigo-50 p-3 rounded">
                         <div className="mb-2">
                           <textarea
                             value={editedContent}
@@ -235,6 +250,18 @@ export default function HealthQuestDashboard({ user }) {
             <SleepTracker user={user} />
           </div>
         )}
+
+        {activeTab === 'meals' && (
+          <div className="w-full max-w-5xl">
+            <MealTracker user={user} />
+          </div>
+        )}
+      </div>
+
+      <div className="fixed bottom-6 right-6 z-50">
+        <button className="bg-indigo-600 p-4 rounded-full text-white shadow-lg hover:bg-indigo-700 text-xl">
+          ＋
+        </button>
       </div>
     </div>
   );

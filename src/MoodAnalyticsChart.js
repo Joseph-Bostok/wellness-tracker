@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from './supabaseClient';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
+import {PieChart,Pie,Cell,Tooltip,ResponsiveContainer} from 'recharts';
+
+const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
 export default function MoodAnalyticsChart({ user }) {
   const [moodData, setMoodData] = useState([]);
@@ -24,8 +26,8 @@ export default function MoodAnalyticsChart({ user }) {
       }, {});
 
       const chartData = Object.entries(moodCounts).map(([mood, count]) => ({
-        mood,
-        count: Number(count) || 0
+        name: mood,
+        value: Number(count) || 0
       }));
 
       setMoodData(chartData);
@@ -33,20 +35,30 @@ export default function MoodAnalyticsChart({ user }) {
   };
 
   return (
-    <div className="w-full bg-white p-4 rounded shadow min-h-[300px]">
-      <h2 className="text-lg font-bold text-gray-800 mb-2">📊 Mood Analytics</h2>
+    <div className="w-full bg-white p-6 rounded shadow min-h-[300px]">
+      <h2 className="text-lg font-bold text-gray-800 mb-4">📊 Mood Distribution</h2>
       {moodData.length > 0 ? (
-        <ResponsiveContainer width="100%" height={250}>
-          <BarChart data={moodData} layout="horizontal" margin={{ top: 10, right: 20, left: 10, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis type="category" dataKey="mood" />
-            <YAxis allowDecimals={false} />
-            <Tooltip />
-            <Bar dataKey="count" fill="#6366f1" />
-          </BarChart>
+        <ResponsiveContainer width="100%" height={300}>
+          <PieChart>
+            <Pie
+              data={moodData}
+              dataKey="value"
+              nameKey="name"
+              cx="50%"
+              cy="50%"
+              outerRadius={100}
+              fill="#8884d8"
+              label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+            >
+              {moodData.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+              ))}
+            </Pie>
+            <Tooltip formatter={(value, name) => [`${value} entries`, name]} />
+          </PieChart>
         </ResponsiveContainer>
       ) : (
-        <p className="text-center text-gray-400">No data to display yet</p>
+        <p className="text-center text-gray-400">No mood data to display yet</p>
       )}
     </div>
   );
