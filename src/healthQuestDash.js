@@ -5,6 +5,7 @@ import StreakTracker from './StreakTracker';
 import SleepTracker from './SleepTracker';
 import MealTracker from './MealTracker';
 import ExerciseTracker from './ExerciseTracker';
+import DashboardOverview from './DashboardOverview';
 
 const prompts = [
   "What went well today?",
@@ -102,6 +103,7 @@ export default function HealthQuestDashboard({ user }) {
           <h1 className="text-lg font-semibold">Wellness Tracker</h1>
           <div className="flex space-x-2">
             {[
+              { key: 'overview', label: '📊 Overview' },
               { key: 'journal', label: '📝 Journal' },
               { key: 'analytics', label: '📊 Analytics' },
               { key: 'sleep', label: '😴 Sleep' },
@@ -262,6 +264,12 @@ export default function HealthQuestDashboard({ user }) {
         {activeTab === 'exercise' && (
           <div className="w-full max-w-5xl">
             <ExerciseTracker user={user} />
+          </div>
+        )}
+
+        {activeTab === 'overview' && (
+          <div className="w-full max-w-5xl">
+            <DashboardOverview user={user} />
           </div>
         )}
       </div>
