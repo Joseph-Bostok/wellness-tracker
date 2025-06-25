@@ -91,39 +91,39 @@ export default function DashboardOverview({ user }) {
     if (exerciseTotal >= 150) earned.push('🏃 150+ min Exercise');
     if (moodCount >= 10) earned.push('😊 10 Mood Logs');
     if (sleepScore >= 70) earned.push('😴 Good Sleep');
+    if (exerciseTotal >= 300) earned.push('💪 300+ min Beast Mode');
+    if (moodCount >= 25) earned.push('🧠 Emotion Explorer');
+    if (moodCount >= 50) earned.push('🧘 Mood Master');
     setAchievements(earned);
   };
 
   return (
-    <div className="bg-white p-4 sm:p-6 rounded shadow space-y-10">
-      <h2 className="text-2xl font-bold">📊 Wellness Overview</h2>
+    <div className="bg-white p-4 sm:p-6 rounded shadow space-y-8">
+      <h2 className="text-2xl font-bold mb-4">📊 Wellness Overview</h2>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <div className="bg-white rounded p-4 shadow space-y-6">
-          <h3 className="text-lg font-semibold">Goals</h3>
-          <div className="flex flex-wrap gap-6 justify-center">
-            {[{
-              label: 'Exercise Goal', value: exerciseTotal / 150 * 100, color: '#10b981'
-            }, {
-              label: 'Mood Check-ins', value: moodCount / 10 * 100, color: '#6366f1'
-            }, {
-              label: 'Sleep Score', value: sleepScore, color: '#f59e0b'
-            }].map((goal, i) => (
-              <div key={i} className="flex flex-col items-center">
-                <div className="w-20 h-20">
-                  <CircularProgressbar
-                    value={Math.min(goal.value, 100)}
-                    text={`${Math.round(Math.min(goal.value, 100))}%`}
-                    styles={buildStyles({ pathColor: goal.color, textColor: goal.color })}
-                  />
-                </div>
-                <p className="mt-1 text-sm text-gray-700 text-center">{goal.label}</p>
+      <div className="flex flex-col lg:flex-row gap-6">
+        <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-6">
+          {[{
+            label: 'Exercise Goal', value: exerciseTotal / 150 * 100, color: '#10b981'
+          }, {
+            label: 'Mood Check-ins', value: moodCount / 10 * 100, color: '#6366f1'
+          }, {
+            label: 'Sleep Score', value: sleepScore, color: '#f59e0b'
+          }].map((goal, i) => (
+            <div key={i} className="flex flex-col items-center bg-gray-50 p-4 rounded shadow">
+              <div className="w-20 h-20">
+                <CircularProgressbar
+                  value={Math.min(goal.value, 100)}
+                  text={`${Math.round(Math.min(goal.value, 100))}%`}
+                  styles={buildStyles({ pathColor: goal.color, textColor: goal.color })}
+                />
               </div>
-            ))}
-          </div>
+              <p className="mt-2 text-sm text-center text-gray-700">{goal.label}</p>
+            </div>
+          ))}
         </div>
 
-        <div className="bg-white rounded p-4 shadow">
+        <div className="flex-1 bg-gray-50 rounded p-4 shadow">
           <h3 className="text-lg font-semibold mb-2">📈 Weekly Trends</h3>
           <ResponsiveContainer width="100%" height={200}>
             <LineChart data={trendData}>
@@ -151,20 +151,27 @@ export default function DashboardOverview({ user }) {
         </div>
       </div>
 
-      <div className="bg-white p-4 rounded shadow text-center">
+      <div className="text-center bg-white p-4 rounded shadow">
         <h3 className="text-lg font-semibold mb-1">🏅 Wellness Score</h3>
-        <p className="text-3xl font-bold text-indigo-600">{Math.round((exerciseTotal / 150 * 30) + (moodCount / 10 * 30) + (sleepScore * 0.4))}/100</p>
+        <p className="text-3xl font-bold text-indigo-600">
+          {Math.round((exerciseTotal / 150 * 30) + (moodCount / 10 * 30) + (sleepScore * 0.4))}/100
+        </p>
         <p className="text-sm text-gray-500">Based on activity, mood, and sleep</p>
       </div>
 
       {achievements.length > 0 && (
         <div className="bg-white p-4 rounded shadow">
           <h3 className="text-lg font-semibold mb-2">🎖️ Achievements</h3>
-          <ul className="list-disc list-inside text-sm text-gray-700">
+          <div className="flex flex-wrap gap-2">
             {achievements.map((a, i) => (
-              <li key={i}>{a}</li>
+              <span
+                key={i}
+                className="inline-block bg-indigo-100 text-indigo-800 text-xs font-medium px-3 py-1 rounded-full"
+              >
+                {a}
+              </span>
             ))}
-          </ul>
+          </div>
         </div>
       )}
     </div>
