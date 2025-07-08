@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { supabase } from './supabaseClient';
 import dayjs from 'dayjs';
+import MealLogList from './MealLogList';
 
 export default function MealTracker({ user }) {
   const [date, setDate] = useState(dayjs().format('YYYY-MM-DD'));
@@ -74,6 +75,8 @@ export default function MealTracker({ user }) {
         </button>
         {message && <p className="text-sm text-gray-600 italic">{message}</p>}
       </div>
+
+      <MealLogList user={user} />
     </div>
   );
 }
