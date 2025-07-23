@@ -14,18 +14,20 @@ export default function MessageBoard({ user }) {
   }, [user]);
 
   const fetchPosts = async () => {
-    const { data, error } = await supabase
-      .from('daily_posts')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('date', { ascending: false });
+  if (!user?.id) return;  // Guard clause to avoid crash chatgpt goated for this one 
+  const { data, error } = await supabase
+    .from('daily_posts')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('date', { ascending: false });
 
-    if (error) {
-      console.error('Error fetching posts:', error.message);
-    } else {
-      setPosts(data);
-    }
-  };
+  if (error) {
+    console.error('Error fetching posts:', error.message);
+  } else {
+    setPosts(data);
+  }
+};
+
 
   return (
     <div className="flex min-h-screen bg-gray-50">

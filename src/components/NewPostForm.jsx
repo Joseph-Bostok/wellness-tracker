@@ -42,9 +42,10 @@ export default function MessageBoard({ user }) {
         {posts.length === 0 ? (
           <p className="text-gray-500 text-center mt-6">No posts yet. Submit your first check-in above!</p>
         ) : (
-          posts.map((post) => (
-            <PostCard key={post.id} post={post} />
-          ))
+          posts.slice(0, 10).map((post) => (
+  <PostCard key={post.id} post={post} />
+))
+
         )}
       </main>
     </div>
