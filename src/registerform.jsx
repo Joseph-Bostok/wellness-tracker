@@ -212,7 +212,7 @@ export default function RegisterForm({ onRegister }) {
         <label className="block text-sm font-medium text-gray-700 mb-2">
           I am a...
         </label>
-        <div className="flex gap-4">
+        <div className="flex gap-4 flex-wrap">
           <label className="flex items-center">
             <input
               type="radio"
@@ -234,6 +234,17 @@ export default function RegisterForm({ onRegister }) {
               className="mr-2"
             />
             <span>Therapist</span>
+          </label>
+          <label className="flex items-center">
+            <input
+              type="radio"
+              name="role"
+              value="admin"
+              checked={role === 'admin'}
+              onChange={(e) => setRole(e.target.value)}
+              className="mr-2"
+            />
+            <span>Admin</span>
           </label>
         </div>
       </div>

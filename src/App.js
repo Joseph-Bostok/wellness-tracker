@@ -3,6 +3,7 @@ import LoginForm from './loginform.jsx';
 import RegisterForm from './registerform.jsx';
 import ClientDashboard from './ClientDashboard.jsx';
 import TherapistDashboard from './TherapistDashboard.jsx';
+import AdminDashboard from './AdminDashboard.jsx';
 import { supabase } from './supabaseClient';
 
 export default function App() {
@@ -131,6 +132,16 @@ export default function App() {
   }
 
   // Route based on user role
+  if (userRole === 'admin') {
+    return (
+      <AdminDashboard
+        user={user}
+        userName={userName}
+        onLogout={handleLogout}
+      />
+    );
+  }
+
   if (userRole === 'therapist') {
     return (
       <TherapistDashboard
