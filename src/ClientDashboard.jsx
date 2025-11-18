@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from './supabaseClient';
 import DailyEntryForm from './DailyEntryForm';
 
@@ -17,12 +17,7 @@ export default function ClientDashboard({ user, userName, onLogout }) {
   const [editingEntry, setEditingEntry] = useState(null);
   const [therapistName, setTherapistName] = useState('');
 
-  useEffect(() => {
-    fetchEntries();
-    fetchTherapistInfo();
-  }, [user.id]);
-
-  const fetchEntries = async () => {
+  const fetchEntries = useCallback(async () => {
     setLoading(true);
     try {
       // Fetch entries with therapist comments
@@ -58,9 +53,9 @@ export default function ClientDashboard({ user, userName, onLogout }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user.id]);
 
-  const fetchTherapistInfo = async () => {
+  const fetchTherapistInfo = useCallback(async () => {
     try {
       const { data } = await supabase
         .from('therapist_clients')
@@ -74,7 +69,12 @@ export default function ClientDashboard({ user, userName, onLogout }) {
     } catch (err) {
       console.error('Error fetching therapist info:', err);
     }
-  };
+  }, [user.id]);
+
+  useEffect(() => {
+    fetchEntries();
+    fetchTherapistInfo();
+  }, [fetchEntries, fetchTherapistInfo]);
 
   const handleEntrySaved = () => {
     fetchEntries();

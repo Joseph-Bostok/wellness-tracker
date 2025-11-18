@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from './supabaseClient';
 
 const MOOD_EMOJIS = {
@@ -23,11 +23,7 @@ export default function ClientEntryView({ client, therapistId, onBack, onLogout,
   const [commentText, setCommentText] = useState({});
   const [submittingComment, setSubmittingComment] = useState({});
 
-  useEffect(() => {
-    fetchClientEntries();
-  }, [client.id]);
-
-  const fetchClientEntries = async () => {
+  const fetchClientEntries = useCallback(async () => {
     setLoading(true);
     try {
       // Fetch entries
@@ -63,7 +59,11 @@ export default function ClientEntryView({ client, therapistId, onBack, onLogout,
     } finally {
       setLoading(false);
     }
-  };
+  }, [client.id]);
+
+  useEffect(() => {
+    fetchClientEntries();
+  }, [fetchClientEntries]);
 
   const handleAddComment = async (entryId) => {
     const text = commentText[entryId]?.trim();

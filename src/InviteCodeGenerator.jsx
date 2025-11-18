@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from './supabaseClient';
 
 export default function InviteCodeGenerator({ therapistId }) {
@@ -7,11 +7,7 @@ export default function InviteCodeGenerator({ therapistId }) {
   const [generating, setGenerating] = useState(false);
   const [copiedCode, setCopiedCode] = useState(null);
 
-  useEffect(() => {
-    fetchCodes();
-  }, [therapistId]);
-
-  const fetchCodes = async () => {
+  const fetchCodes = useCallback(async () => {
     setLoading(true);
     try {
       const { data, error } = await supabase
@@ -27,7 +23,11 @@ export default function InviteCodeGenerator({ therapistId }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [therapistId]);
+
+  useEffect(() => {
+    fetchCodes();
+  }, [fetchCodes]);
 
   const generateCode = () => {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';

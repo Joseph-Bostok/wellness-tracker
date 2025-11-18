@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from './supabaseClient';
 import InviteCodeGenerator from './InviteCodeGenerator';
 import ClientEntryView from './ClientEntryView';
@@ -9,11 +9,7 @@ export default function TherapistDashboard({ user, userName, onLogout }) {
   const [loading, setLoading] = useState(true);
   const [selectedClient, setSelectedClient] = useState(null);
 
-  useEffect(() => {
-    fetchClients();
-  }, [user.id]);
-
-  const fetchClients = async () => {
+  const fetchClients = useCallback(async () => {
     setLoading(true);
     try {
       // Get all clients assigned to this therapist
@@ -54,7 +50,11 @@ export default function TherapistDashboard({ user, userName, onLogout }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user.id]);
+
+  useEffect(() => {
+    fetchClients();
+  }, [fetchClients]);
 
   const formatDate = (dateString) => {
     if (!dateString) return 'No entries';
