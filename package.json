@@ -25,6 +25,7 @@
   "scripts": {
     "start": "react-scripts start",
     "start:legacy": "NODE_OPTIONS=--openssl-legacy-provider react-scripts start",
+    "start:network": "HOST=0.0.0.0 NODE_OPTIONS=--openssl-legacy-provider react-scripts start",
     "dev": "concurrently \"npm run backend-start\" \"npm start\"",
     "build": "react-scripts build",
     "build:legacy": "NODE_OPTIONS=--openssl-legacy-provider react-scripts build",
