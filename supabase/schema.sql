@@ -274,7 +274,11 @@ CREATE POLICY "Clients can view comments on own entries" ON therapist_comments
 
 -- Function to generate random invite code
 CREATE OR REPLACE FUNCTION generate_invite_code()
-RETURNS TEXT AS $$
+RETURNS TEXT
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
 DECLARE
     chars TEXT := 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     result TEXT := '';
@@ -285,16 +289,20 @@ BEGIN
     END LOOP;
     RETURN result;
 END;
-$$ LANGUAGE plpgsql;
+$$;
 
 -- Function to update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
 BEGIN
     NEW.updated_at = NOW();
     RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$;
 
 -- Triggers for updated_at
 CREATE TRIGGER update_profiles_updated_at
